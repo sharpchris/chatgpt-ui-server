@@ -365,10 +365,11 @@ def conversation(request):
     message_object_list = request.data.get('message')
     conversation_id = request.data.get('conversationId')
     request_max_response_tokens = request.data.get('max_tokens')
-    system_content = request.data.get('system_content')
-    if not system_content:
-        system_content = "You are a potential juror and are answering the questions of a lawyer."
-    temperature = request.data.get('temperature', 0.7)
+    # system_content = request.data.get('system_content')
+    # if not system_content:
+        # system_content = "You are a helpful assistant."
+    system_content = "You are a potential juror answering questions."
+    temperature = request.data.get('temperature', 0.4)
     top_p = request.data.get('top_p', 1)
     frequency_penalty = request.data.get('frequency_penalty', 0)
     presence_penalty = request.data.get('presence_penalty', 0)
