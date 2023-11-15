@@ -15,19 +15,21 @@ services:
     ports:
       - '8000:8000'
     networks:
-        - chatgpt-ui_network
+        - chatgpt_ui_network
   web-server:
+    platform: linux/x86_64
     build:
       context: .
     environment:
-      - BACKEND_URL=http://wsgi-server:8000
+      - BACKEND_URL=localhost:8000
     ports:
       - '9000:80'
     depends_on:
       - wsgi-server
     networks:
-      - chatgpt-ui_network
+      - chatgpt_ui_network
 
 networks:
-  chatgpt-ui_network:
+  chatgpt_ui_network:
+    name: chatgpt_ui_network
     driver: bridge
