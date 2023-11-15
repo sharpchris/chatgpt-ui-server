@@ -268,7 +268,7 @@ def gen_title(request):
     my_openai = get_openai(openai_api_key)
     try:
         openai_response = my_openai.ChatCompletion.create(
-            model='gpt-3.5-turbo-0301',
+            model='gpt-3.5-turbo',
             messages=messages,
             max_tokens=256,
             temperature=0.5,
