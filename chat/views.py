@@ -203,26 +203,31 @@ MODELS = {
         'max_prompt_tokens': 3096,
         'max_response_tokens': 1000
     },
+    'gpt-3.5-turbo-1106': {
+        'name': 'gpt-3.5-turbo-1106',
+        'max_tokens': 16385,
+        'max_prompt_tokens': 8000,
+        'max_response_tokens': 4000
+    },
     'gpt-4': {
         'name': 'gpt-4',
         'max_tokens': 8192,
         'max_prompt_tokens': 6192,
         'max_response_tokens': 2000
     },
-    'gpt-3.5-turbo-16k': {
-        'name': 'gpt-3.5-turbo-16k',
-        'max_tokens': 16384,
-        'max_prompt_tokens': 12384,
-        'max_response_tokens': 4000
-    },
     'gpt-4-32k': {
         'name': 'gpt-4-32k',
         'max_tokens': 32768,
         'max_prompt_tokens': 24768,
         'max_response_tokens': 8000
-    }
+    },
+    'gpt-4-1106-preview': {
+        'name': 'gpt-4-1106-preview',
+        'max_tokens': 128000,
+        'max_prompt_tokens': 52000,
+        'max_response_tokens': 24000
+    },
 }
-
 
 def sse_pack(event, data):
     # Format data as an SSE message
@@ -799,8 +804,8 @@ def num_tokens_from_text(text, model="gpt-3.5-turbo-0301"):
     if model == "gpt-3.5-turbo":
         print("Warning: gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
         return num_tokens_from_text(text, model="gpt-3.5-turbo-0613")
-    elif model == "gpt-3.5-turbo-16k":
-        print("Warning: gpt-3.5-turbo-16k may change over time. Returning num tokens assuming gpt-3.5-turbo-16k-0613.")
+    elif model == "gpt-3.5-turbo-1106":
+        print("Warning: gpt-3.5-turbo-1106 may change over time. Returning num tokens assuming gpt-3.5-turbo-16k-0613.")
         return num_tokens_from_text(text, model="gpt-3.5-turbo-16k-0613")
     elif model == "gpt-4":
         print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
@@ -808,8 +813,12 @@ def num_tokens_from_text(text, model="gpt-3.5-turbo-0301"):
     elif model == "gpt-4-32k":
         print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
         return num_tokens_from_text(text, model="gpt-4-32k-0613")
+    elif model == "gpt-4-1106-preview":
+        print("Warning: ggpt-4-1106-preview may change over time. Returning num tokens as if it is the same as gpt-4-0613.")
+        return num_tokens_from_text(text, model="gpt-4-32k-0613")
 
     if model not in ["gpt-3.5-turbo-0613", "gpt-4-0613", "gpt-3.5-turbo-16k-0613", "gpt-4-32k-0613"]:
+        print(f"""num_tokens_from_text() is not implemented for model {model}.""")
         raise NotImplementedError(f"""num_tokens_from_text() is not implemented for model {model}.""")
 
     return len(encoding.encode(text))
@@ -825,14 +834,17 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     if model == "gpt-3.5-turbo":
         print("Warning: gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
         return num_tokens_from_messages(messages, model="gpt-3.5-turbo-0613")
-    elif model == "gpt-3.5-turbo-16k":
-        print("Warning: gpt-3.5-turbo-16 may change over time. Returning num tokens assuming gpt-3.5-turbo-16k-0613.")
+    elif model == "gpt-3.5-turbo-1106":
+        print("Warning: gpt-3.5-turbo-1106 may change over time. Returning num tokens as if it is the same as gpt-3.5-turbo-16k-0613")
         return num_tokens_from_messages(messages, model="gpt-3.5-turbo-16k-0613")
     elif model == "gpt-4":
         print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
         return num_tokens_from_messages(messages, model="gpt-4-0613")
     elif model == "gpt-4-32k":
         print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
+        return num_tokens_from_messages(messages, model="gpt-4-32k-0613")
+    elif model == "gpt-4-1106-preview":
+        print("Warning: ggpt-4-1106-preview may change over time. Returning num tokens as if it is the same as gpt-4-0613.")
         return num_tokens_from_messages(messages, model="gpt-4-32k-0613")
     elif model == "gpt-3.5-turbo-0613":
         tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
@@ -847,6 +859,7 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
         tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
         tokens_per_name = -1  # if there's a name, the role is omitted
     else:
+        print(f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
         raise NotImplementedError(f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
     num_tokens = 0
     for message in messages:
