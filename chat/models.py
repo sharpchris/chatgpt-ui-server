@@ -26,6 +26,7 @@ class Message(models.Model):
     tokens = models.IntegerField(default=0)
     is_bot = models.BooleanField(default=False)
     is_disabled = models.BooleanField(default=False)
+    is_hidden_from_user = models.BooleanField(default=False)
     message_type = models.IntegerField(default=0)
     embedding_message_doc = models.ForeignKey(EmbeddingDocument, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
