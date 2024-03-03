@@ -60,7 +60,8 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'chat.apps.ChatConfig',
     'stats.apps.StatsConfig',
-    'provider.apps.ProviderConfig'
+    'provider.apps.ProviderConfig',
+    'import_export',
 ]
 
 MIDDLEWARE = [
