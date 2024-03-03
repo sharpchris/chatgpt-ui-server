@@ -50,6 +50,8 @@ from langchain.callbacks.manager import (
     AsyncCallbackManagerForChainRun,
 )
 
+AZURE_DEPLOYMENT = "juror-gpt4-turbo-1106"
+
 logger = logging.getLogger(__name__)
 
 text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=1280, chunk_overlap=200)
@@ -68,6 +70,13 @@ openai_model = {
     'max_tokens': 4096,
     'max_prompt_tokens': 3096,
     'max_response_tokens': 1000
+}
+
+AZURE_DEPLOYMENT = {
+    'name': AZURE_DEPLOYMENT,
+    'max_tokens': 131072,
+    'max_prompt_tokens': 123072,
+    'max_response_tokens': 8000,
 }
 
 _queue = queue.Queue()
