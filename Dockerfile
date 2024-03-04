@@ -1,7 +1,7 @@
 FROM python:3.10-slim as wsgi-server
 
 RUN apt update \
-    && apt install -y --no-install-recommends python3-dev default-libmysqlclient-dev build-essential libpq-dev dos2unix \
+    && apt install -y --no-install-recommends python3-dev default-libmysqlclient-dev build-essential pkg-config libpq-dev dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
 ENV DJANGO_SUPERUSER_USERNAME=admin
@@ -10,7 +10,7 @@ ENV DJANGO_SUPERUSER_EMAIL=admin@example.com
 
 COPY requirements.txt ./
 
-RUN pip install --no-cache-dir -i https://mirrors.cloud.tencent.com/pypi/simple -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 WORKDIR /app
 
