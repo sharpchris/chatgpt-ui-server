@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'dj_rest_auth',
     'dj_rest_auth.registration',
+    'new_user.apps.New_UserConfig',
     'chat.apps.ChatConfig',
     'stats.apps.StatsConfig',
     'provider.apps.ProviderConfig',
