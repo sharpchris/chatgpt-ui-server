@@ -1,3 +1,4 @@
+import random
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
@@ -11,6 +12,7 @@ def test_message(sender, instance, created, **kwargs):
         print(f"instance: {instance}")
 
         # Create all the jury members for the new user
+        random.shuffle(jurors)
         for juror in jurors:
             juror_convo = Conversation.objects.create(
                 user = instance,
