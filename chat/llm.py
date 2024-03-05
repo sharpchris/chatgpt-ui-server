@@ -50,7 +50,7 @@ from langchain.callbacks.manager import (
     AsyncCallbackManagerForChainRun,
 )
 
-AZURE_DEPLOYMENT = "juror-gpt4-turbo-1106"
+AZURE_DEPLOYMENT = "juror-gpt4-0125-preview"
 
 logger = logging.getLogger(__name__)
 

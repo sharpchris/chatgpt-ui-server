@@ -31,7 +31,7 @@ from .llm import get_embedding_document, unpick_faiss, langchain_doc_chat
 from .llm import setup_openai_env as llm_openai_env
 from .llm import setup_openai_model as llm_openai_model
 
-AZURE_DEPLOYMENT = "juror-gpt4-turbo-1106"
+AZURE_DEPLOYMENT = "juror-gpt4-0125-preview"
 
 logger = logging.getLogger(__name__)
 
@@ -886,7 +886,7 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
 def get_openai(openai_api_key):
     openai.api_type = "azure"
     openai.api_key = openai_api_key
-    openai.api_base = "https://jury-interviews.openai.azure.com/"
+    openai.api_base = "https://jury-interviews-east1.openai.azure.com/"
     openai.api_version = "2023-05-15"
     proxy = os.getenv('OPENAI_API_PROXY')
     if proxy:
