@@ -468,9 +468,12 @@ def conversation(request):
             # get the conversation
             conversation_obj = Conversation.objects.get(id=conversation_id)
         else:
-            # create a new conversation
-            conversation_obj = Conversation(user=request.user)
-            conversation_obj.save()
+            # # create a new conversation
+            # conversation_obj = Conversation(user=request.user)
+            # conversation_obj.save()
+
+            # Do not allow new conversations to be created by the user in the application
+            raise Exception("User is not allowed to create new Conversations.")
 
         # insert new messages
         try:
@@ -550,9 +553,12 @@ def conversation(request):
             # get the conversation
             conversation_obj = Conversation.objects.get(id=conversation_id)
         else:
-            # create a new conversation
-            conversation_obj = Conversation(user=request.user)
-            conversation_obj.save()
+            # # create a new conversation
+            # conversation_obj = Conversation(user=request.user)
+            # conversation_obj.save()
+
+            # Do not allow new conversations to be created by the user in the application
+            raise Exception("User is not allowed to create new Conversations.")
         # insert new user messages
         try:
             for m in message_object_list:
