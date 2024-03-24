@@ -32,4 +32,4 @@ WORKDIR /app
 
 COPY --from=wsgi-server /app/static /app/static
 
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY data/nginx/nginx.conf /etc/nginx/templates/default.conf.template
