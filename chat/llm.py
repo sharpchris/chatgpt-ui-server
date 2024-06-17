@@ -51,6 +51,7 @@ from langchain.callbacks.manager import (
 )
 
 AZURE_DEPLOYMENT = "juror-gpt4-0125-preview"
+UFIT_AI_MODEL = "llama3-8b-instruct"
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,13 @@ openai_model = {
 
 AZURE_DEPLOYMENT = {
     'name': AZURE_DEPLOYMENT,
+    'max_tokens': 131072,
+    'max_prompt_tokens': 123072,
+    'max_response_tokens': 8000,
+}
+
+UFIT_DEPLOYMENT = {
+    'name': UFIT_AI_MODEL,
     'max_tokens': 131072,
     'max_prompt_tokens': 123072,
     'max_response_tokens': 8000,

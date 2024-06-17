@@ -32,6 +32,7 @@ from .llm import setup_openai_env as llm_openai_env
 from .llm import setup_openai_model as llm_openai_model
 
 AZURE_DEPLOYMENT = "juror-gpt4-0125-preview"
+UFIT_DEPLOYMENT = "llama3-8b-instruct"
 
 logger = logging.getLogger(__name__)
 
@@ -278,7 +279,7 @@ def gen_title(request):
     try:
         openai_response = my_openai.ChatCompletion.create(
             # was 3.5 turbo
-            engine=AZURE_DEPLOYMENT,
+            engine=UFIT_DEPLOYMENT,
             api_version = "2023-05-15",
             messages=messages,
             max_tokens=102,
@@ -373,16 +374,16 @@ def upload_conversations(request):
 @permission_classes([IsAuthenticated])
 def conversation(request):
     # model_name = request.data.get('name')
-    # Changing to be fixed to the model selected in Azure
-    model_name = AZURE_DEPLOYMENT
+    # Changing to be fixed to the UFIT provided Model
+    model_name = UFIT_DEPLOYMENT
     message_object_list = request.data.get('message')
     conversation_id = request.data.get('conversationId')
     request_max_response_tokens = request.data.get('max_tokens')
     # system_content = request.data.get('system_content')
     # if not system_content:
         # system_content = "You are a helpful assistant."
-    system_content = "You are a potential juror answering questions."
-    temperature = request.data.get('temperature', 0.4)
+    system_content = "You are a patient being interviewed by a doctor."
+    temperature = request.data.get('temperature', 0.6)
     top_p = request.data.get('top_p', 1)
     frequency_penalty = request.data.get('frequency_penalty', 0)
     presence_penalty = request.data.get('presence_penalty', 0)
@@ -447,7 +448,7 @@ def conversation(request):
             if messages['renew']:
                 openai_response = my_openai.ChatCompletion.create(
                     # model=model['name'],
-                    engine=AZURE_DEPLOYMENT,
+                    engine=UFIT_DEPLOYMENT,
                     api_version = "2023-05-15",
                     messages=messages['messages'],
                     max_tokens=model['max_response_tokens'],
@@ -794,7 +795,7 @@ def build_messages(model, user, conversation_id, new_messages, web_search_params
 def get_current_model(model_name, request_max_response_tokens):
     if model_name is None:
         # model_name ="gpt-3.5-turbo"
-        model_name = AZURE_DEPLOYMENT
+        model_name = UFIT_DEPLOYMENT
     model = MODELS[model_name]
     if request_max_response_tokens is not None:
         model['max_response_tokens'] = int(request_max_response_tokens)
@@ -832,7 +833,7 @@ def num_tokens_from_text(text, model="gpt-3.5-turbo-0301"):
     elif model == "gpt-4-32k":
         print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
         return num_tokens_from_text(text, model="gpt-4-32k-0613")
-    elif model == AZURE_DEPLOYMENT:
+    elif model == AZURE_DEPLOYMENT or model == UFIT_DEPLOYMENT:
         print(f"Warning: the model '{model}' may change over time. Returning num tokens assuming gpt-4-0314.")
         return num_tokens_from_text(text, model="gpt-4-32k-0613")
 
@@ -858,7 +859,7 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     elif model == "gpt-4":
         print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
         return num_tokens_from_messages(messages, model="gpt-4-0613")
-    elif model == AZURE_DEPLOYMENT:
+    elif model == AZURE_DEPLOYMENT or model == UFIT_DEPLOYMENT:
         print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
         return num_tokens_from_messages(messages, model="gpt-4-0613")
     elif model == "gpt-4-32k":
@@ -892,7 +893,7 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
 def get_openai(openai_api_key):
     openai.api_type = "azure"
     openai.api_key = openai_api_key
-    openai.api_base = "https://jury-interviews-east1.openai.azure.com/"
+    openai.api_base = "https://api.ai.it.ufl.edu/v1/"
     openai.api_version = "2023-05-15"
     proxy = os.getenv('OPENAI_API_PROXY')
     if proxy:
