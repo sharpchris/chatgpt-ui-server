@@ -230,7 +230,13 @@ MODELS = {
         'max_tokens': 131072,
         'max_prompt_tokens': 123072,
         'max_response_tokens': 8000,
-}
+    },
+    UFIT_DEPLOYMENT: {
+        'name': UFIT_DEPLOYMENT,
+        'max_tokens': 131072,
+        'max_prompt_tokens': 123072,
+        'max_response_tokens': 8000,
+    }
 }
 
 
@@ -891,9 +897,9 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
 
 
 def get_openai(openai_api_key):
-    openai.api_type = "azure"
+    # openai.api_type = "azure"
     openai.api_key = openai_api_key
-    openai.api_base = "https://api.ai.it.ufl.edu/v1/"
+    openai.base_url = "https://api.ai.it.ufl.edu/v1/"
     openai.api_version = "2023-05-15"
     proxy = os.getenv('OPENAI_API_PROXY')
     if proxy:
