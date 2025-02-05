@@ -51,6 +51,7 @@ from langchain.callbacks.manager import (
 )
 
 AZURE_DEPLOYMENT = "juror-gpt4-0125-preview"
+NAVIGATOR_TOOLKIT = "llama-3.1-70b-instruct"
 
 logger = logging.getLogger(__name__)
 
@@ -77,11 +78,17 @@ AZURE_DEPLOYMENT = {
     'max_tokens': 131072,
     'max_prompt_tokens': 123072,
     'max_response_tokens': 8000,
+},
+NAVIGATOR_TOOLKIT = {
+    'name': NAVIGATOR_TOOLKIT,
+    'max_tokens': 131072,
+    'max_prompt_tokens': 123072,
+    'max_response_tokens': 8000,
 }
 
 _queue = queue.Queue()
 
-def setup_openai_env(api_base=None, api_key=None):
+def setup_openai_env(api_base='https://api.ai.it.ufl.edu/v1', api_key=None):
     if not openai_env['api_base']:
         openai_env['api_base'] = api_base
     if not openai_env['api_key']:
