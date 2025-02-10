@@ -20,9 +20,11 @@ class RegistrationView(RegisterView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        # Removing the valid email check by closing the if side of the branch and commenting out the "valid_emails = get_emails_from_csv()" line
         # Check to see if the user is in the allow list
-        valid_emails = get_emails_from_csv()
-        if request.data['email'] not in valid_emails:
+        # valid_emails = get_emails_from_csv()
+        # if request.data['email'] not in valid_emails:
+        if False:
             print(f"The email address {request.data['email']} was not in the list of valid addresses")
             response = Response({'detail': f"The email address {request.data['email']} is not in the list of allowed emails. Please use your UF email account, or contact the instructor."}, status=status.HTTP_403_FORBIDDEN)
         else:
