@@ -31,8 +31,10 @@ from .llm import get_embedding_document, unpick_faiss, langchain_doc_chat
 from .llm import setup_openai_env as llm_openai_env
 from .llm import setup_openai_model as llm_openai_model
 
+
 AZURE_DEPLOYMENT = "juror-gpt4-0125-preview"
 NAVIGATOR_TOOLKIT = 'llama-3.1-70b-instruct'
+
 
 logger = logging.getLogger(__name__)
 
