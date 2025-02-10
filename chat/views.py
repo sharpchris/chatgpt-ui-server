@@ -31,7 +31,10 @@ from .llm import get_embedding_document, unpick_faiss, langchain_doc_chat
 from .llm import setup_openai_env as llm_openai_env
 from .llm import setup_openai_model as llm_openai_model
 
-AZURE_DEPLOYMENT = "juror-gpt35-16k"
+
+AZURE_DEPLOYMENT = "juror-gpt4-0125-preview"
+NAVIGATOR_TOOLKIT = 'llama-3.1-70b-instruct'
+
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +152,7 @@ class EmbeddingDocumentViewSet(viewsets.ModelViewSet):
 
         my_openai = get_openai(openai_api_key)
         print("Making an llm_openai_env #2", flush=True)
-        llm_openai_env(my_openai.api_base, my_openai.api_key)
+        llm_openai_env(my_openai.base_url, my_openai.api_key)
         print("llm_openai_env done #2", flush=True)
 
         # Get the uploaded file from the request
@@ -229,7 +232,13 @@ MODELS = {
         'max_tokens': 131072,
         'max_prompt_tokens': 123072,
         'max_response_tokens': 8000,
-}
+    },
+    NAVIGATOR_TOOLKIT: {
+        'name': NAVIGATOR_TOOLKIT,
+        'max_tokens': 131072,
+        'max_prompt_tokens': 123072,
+        'max_response_tokens': 8000,
+    }
 }
 
 
@@ -276,18 +285,17 @@ def gen_title(request):
 
     my_openai = get_openai(openai_api_key)
     try:
-        openai_response = my_openai.ChatCompletion.create(
+        openai_response = my_openai.chat.completions.create(
             # was 3.5 turbo
-            engine=AZURE_DEPLOYMENT,
-            api_version = "2023-05-15",
+            model=NAVIGATOR_TOOLKIT,
             messages=messages,
             max_tokens=102,
-            temperature=0.5,
+            temperature=0.8,
             top_p=1,
             frequency_penalty=0,
             presence_penalty=0,
         )
-        completion_text = openai_response['choices'][0]['message']['content']
+        completion_text = openai_response['choices'][0]['message']['content'] #TODO fix for updated ChatCompletion Chunk from newest OpenAI client
         title = completion_text.strip().replace('"', '')
 
         # increment the token count
@@ -374,7 +382,7 @@ def upload_conversations(request):
 def conversation(request):
     # model_name = request.data.get('name')
     # Changing to be fixed to the model selected in Azure
-    model_name = AZURE_DEPLOYMENT
+    model_name = NAVIGATOR_TOOLKIT
     message_object_list = request.data.get('message')
     conversation_id = request.data.get('conversationId')
     request_max_response_tokens = request.data.get('max_tokens')
@@ -382,7 +390,7 @@ def conversation(request):
     # if not system_content:
         # system_content = "You are a helpful assistant."
     system_content = "You are a potential juror answering questions."
-    temperature = request.data.get('temperature', 0.4)
+    temperature = request.data.get('temperature', 0.8)
     top_p = request.data.get('top_p', 1)
     frequency_penalty = request.data.get('frequency_penalty', 0)
     presence_penalty = request.data.get('presence_penalty', 0)
@@ -421,7 +429,7 @@ def conversation(request):
             )
 
     my_openai = get_openai(openai_api_key)
-    llm_openai_env(my_openai.api_base, my_openai.api_key)
+    llm_openai_env(my_openai.base_url, my_openai.api_key)
 
     model = get_current_model(model_name, request_max_response_tokens)
     llm_openai_model(model)
@@ -445,10 +453,8 @@ def conversation(request):
     def stream_content():
         try:
             if messages['renew']:
-                openai_response = my_openai.ChatCompletion.create(
-                    # model=model['name'],
-                    engine=AZURE_DEPLOYMENT,
-                    api_version = "2023-05-15",
+                openai_response = my_openai.chat.completions.create(
+                    model=NAVIGATOR_TOOLKIT,
                     messages=messages['messages'],
                     max_tokens=model['max_response_tokens'],
                     temperature=temperature,
@@ -503,13 +509,28 @@ def conversation(request):
         completion_text = ''
         if messages['renew']:  # return LLM answer
             # iterate through the stream of events
+            # Example Event:
+            # ChatCompletionChunk(
+            #     id='chat-129efe840f1a4e70aa42316f2d333a69', 
+            #     choices=[
+            #         Choice(
+            #         delta=ChoiceDelta(
+            #             content='Is', function_call=None, role='assistant', tool_calls=None
+            #         ),
+            #         finish_reason=None, 
+            #         index=0, 
+            #         logprobs=None)],
+            #     created=1739155229, 
+            #     model='meta-llama/Llama-3.1-70B-Instruct', 
+            #     object='chat.completion.chunk', 
+            #     system_fingerprint=None
+            # )
             for event in openai_response:
                 collected_events.append(event)  # save the event response
-                # print(event)
-                if event['choices'][0]['finish_reason'] is not None:
+                if event.choices[0].finish_reason is not None:
                     break
-                if 'content' in event['choices'][0]['delta']:
-                    event_text = event['choices'][0]['delta']['content']
+                if event.choices[0].delta.content:
+                    event_text = event.choices[0].delta.content
                     completion_text += event_text  # append the text
                     yield sse_pack('message', {'content': event_text})
             bot_message_type = Message.plain_message_type
@@ -794,7 +815,7 @@ def build_messages(model, user, conversation_id, new_messages, web_search_params
 def get_current_model(model_name, request_max_response_tokens):
     if model_name is None:
         # model_name ="gpt-3.5-turbo"
-        model_name = AZURE_DEPLOYMENT
+        model_name = NAVIGATOR_TOOLKIT
     model = MODELS[model_name]
     if request_max_response_tokens is not None:
         model['max_response_tokens'] = int(request_max_response_tokens)
@@ -835,6 +856,9 @@ def num_tokens_from_text(text, model="gpt-3.5-turbo-0301"):
     elif model == AZURE_DEPLOYMENT:
         print(f"Warning: the model '{model}' may change over time. Returning num tokens assuming gpt-4-0314.")
         return num_tokens_from_text(text, model="gpt-4-32k-0613")
+    elif model == NAVIGATOR_TOOLKIT:
+        print(f"Warning: the model '{model}' may change over time. Returning num tokens assuming gpt-4-0314.")
+        return num_tokens_from_text(text, model="gpt-4-32k-0613")
 
     if model not in ["gpt-3.5-turbo-0613", "gpt-4-0613", "gpt-3.5-turbo-16k-0613", "gpt-4-32k-0613"]:
         raise NotImplementedError(f"""num_tokens_from_text() is not implemented for model {model}.""")
@@ -859,6 +883,9 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
         print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
         return num_tokens_from_messages(messages, model="gpt-4-0613")
     elif model == AZURE_DEPLOYMENT:
+        print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
+        return num_tokens_from_messages(messages, model="gpt-4-0613")
+    elif model == NAVIGATOR_TOOLKIT:
         print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0613.")
         return num_tokens_from_messages(messages, model="gpt-4-0613")
     elif model == "gpt-4-32k":
@@ -888,14 +915,22 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
     return num_tokens
 
+### For working with an llm on Azure
+# def get_openai(openai_api_key):
+#     openai.api_type = "azure"
+#     openai.api_key = openai_api_key
+#     openai.api_base = "https://jury-interviews-east1.openai.azure.com/"
+#     openai.api_version = "2023-05-15"
+#     proxy = os.getenv('OPENAI_API_PROXY')
+#     if proxy:
+#         openai.api_base = proxy
+#     # return openai
+#     return openai
 
 def get_openai(openai_api_key):
-    openai.api_type = "azure"
     openai.api_key = openai_api_key
-    openai.api_base = "https://jury-interviews-east1.openai.azure.com/"
-    openai.api_version = "2023-05-15"
+    openai.base_url = "https://api.ai.it.ufl.edu/v1/"
     proxy = os.getenv('OPENAI_API_PROXY')
     if proxy:
-        openai.api_base = proxy
-    # return openai
+        openai.base_url = proxy
     return openai
