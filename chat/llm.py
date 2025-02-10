@@ -63,7 +63,7 @@ embedding_model = {
 
 openai_env = {
     'api_key': None,
-    'api_base': None,
+    'base_url': None,
 }
 
 openai_model = {
@@ -88,15 +88,14 @@ NAVIGATOR_TOOLKIT = {
 
 _queue = queue.Queue()
 
-def setup_openai_env(api_base='https://api.ai.it.ufl.edu/v1', api_key=None):
-    if not openai_env['api_base']:
-        openai_env['api_base'] = api_base
+def setup_openai_env(base_url='https://api.ai.it.ufl.edu/v1', api_key=None):
+    if not openai_env['base_url']:
+        openai_env['base_url'] = base_url
     if not openai_env['api_key']:
         openai_env['api_key'] = api_key
-    openai.api_base = openai_env['api_base']
+    openai.base_url = openai_env['base_url']
     openai.api_key = openai_env['api_key']
-    openai.api_version = None
-    return (openai_env['api_base'], openai_env['api_key'])
+    return (openai_env['base_url'], openai_env['api_key'])
 
 
 def setup_openai_model(model):
@@ -164,14 +163,14 @@ class ChatModel:
     @property
     def model(self):
         if not self._model:
-            api_base, api_key = setup_openai_env()
+            base_url, api_key = setup_openai_env()
             self.name = 'open_ai'
             max_response_tokens = openai_model['max_prompt_tokens']
             if max_response_tokens > 1024:
                 max_response_tokens = 1024
             self._model = ChatOpenAI(
                 api_key=api_key,
-                api_base=api_base,
+                base_url=base_url,
                 model_name=openai_model['name'],
                 max_tokens=max_response_tokens,
                 streaming=True,
